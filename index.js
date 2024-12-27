@@ -23,8 +23,8 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect(); 
-    await client.db("admin").command({ ping: 1 }); 
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const queriesCollection = client.db('productQueryDB').collection('queries');
@@ -32,16 +32,16 @@ async function run() {
 
     // Endpoint to create a new query
     app.post('/queries', async (req, res) => {
-      const { title, description } = req.body;
-      const query = { title, description, commentCount: 0, created_at: new Date() };
+      const { title, description, user_id } = req.body;
+      const query = { title, description, user_id: ObjectId(user_id), commentCount: 0, created_at: new Date() };
       const result = await queriesCollection.insertOne(query);
       res.status(201).send(result.ops[0]);
     });
 
     // Endpoint to add a comment to a query and update comment count
     app.post('/comments', async (req, res) => {
-      const { query_id, comment } = req.body;
-      const newComment = { query_id: ObjectId(query_id), comment, created_at: new Date() };
+      const { query_id, comment, user_id } = req.body;
+      const newComment = { query_id: ObjectId(query_id), comment, user_id: ObjectId(user_id), created_at: new Date() };
       await commentsCollection.insertOne(newComment);
       await queriesCollection.updateOne({ _id: ObjectId(query_id) }, { $inc: { commentCount: 1 } });
       res.status(201).send(newComment);
@@ -68,7 +68,23 @@ async function run() {
       const comments = await commentsCollection.find(query).toArray();
       res.send(comments);
     });
-    
+
+    // Fetch queries added by a specific user
+    app.get('/myqueries/:user_id', async (req, res) => {
+      const user_id = req.params.user_id;
+      const query = { user_id: new ObjectId(user_id) };
+      const myQueries = await queriesCollection.find(query).toArray();
+      res.send(myQueries);
+    });
+
+    // Fetch comments added by a specific user
+    app.get('/mycomments/:user_id', async (req, res) => {
+      const user_id = req.params.user_id;
+      const query = { user_id: new ObjectId(user_id) };
+      const myComments = await commentsCollection.find(query).toArray();
+      res.send(myComments);
+    });
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
