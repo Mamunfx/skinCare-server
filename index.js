@@ -25,8 +25,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
-    console.log("Connected to MongoDB!");
+    // await client.connect();
 
     const queriesCollection = client.db("productQueryDB").collection("queries");
     const commentsCollection = client.db("productQueryDB").collection("comments");
@@ -146,12 +145,23 @@ async function run() {
     // Get comments for a specific query
     app.get("/Indivucomments/:query_id", async (req, res) => {
       const { query_id } = req.params;
-
       try {
         const comments = await commentsCollection.find({ query_id: new ObjectId(query_id) }).toArray();
         res.status(200).send(comments);
       } catch (error) {
         res.status(500).send({ error: "Failed to fetch comments." });
+      }
+    });
+
+    // Get comments for a specific query
+    app.get("/Comments/:userEmail", async (req, res) => {
+      const { userEmail } = req.params;
+
+      try {
+        const Comments = await commentsCollection.find({ userEmail }).toArray();
+        res.status(200).send(Comments);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to fetch user queries." });
       }
     });
 
