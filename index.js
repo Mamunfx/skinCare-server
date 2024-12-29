@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -28,7 +27,9 @@ async function run() {
     // await client.connect();
 
     const queriesCollection = client.db("productQueryDB").collection("queries");
-    const commentsCollection = client.db("productQueryDB").collection("comments");
+    const commentsCollection = client
+      .db("productQueryDB")
+      .collection("comments");
 
     // Create a new query
     app.post("/queries", async (req, res) => {
@@ -79,7 +80,9 @@ async function run() {
       const { id } = req.params;
 
       try {
-        const query = await queriesCollection.findOne({ _id: new ObjectId(id) });
+        const query = await queriesCollection.findOne({
+          _id: new ObjectId(id),
+        });
         if (query) {
           res.status(200).send(query);
         } else {
@@ -95,14 +98,16 @@ async function run() {
       const { userEmail } = req.params;
 
       try {
-        const userQueries = await queriesCollection.find({ userEmail }).toArray();
+        const userQueries = await queriesCollection
+          .find({ userEmail })
+          .toArray();
         res.status(200).send(userQueries);
       } catch (error) {
         res.status(500).send({ error: "Failed to fetch user queries." });
       }
     });
 
-    // Update a query by ID 
+    // Update a query by ID
     app.put("/queries/:id", async (req, res) => {
       const { id } = req.params;
       const {
@@ -140,15 +145,32 @@ async function run() {
     app.delete("/queries/:id", async (req, res) => {
       const { id } = req.params;
       try {
-        const query = await queriesCollection.findOne({ _id: new ObjectId(id) });
+        const query = await queriesCollection.findOne({
+          _id: new ObjectId(id),
+        });
         if (!query) {
           return res.status(404).send({ error: "Query not found." });
         }
         await queriesCollection.deleteOne({ _id: new ObjectId(id) });
         await commentsCollection.deleteMany({ query_id: new ObjectId(id) });
-        res.status(200).send({ message: "Query and related recommendations deleted successfully." });
+        res.status(200).send({
+          message: "Query and related recommendations deleted successfully.",
+        });
       } catch (error) {
         res.status(500).send({ error: "Failed to delete query." });
+      }
+    });
+
+    // Get queries by exact product name
+    app.get("/searchqueries", async (req, res) => {
+      const { productName } = req.query;
+      try {
+        const searchResult = await queriesCollection.find({ productName }).toArray();
+        console.log(searchResult);
+        
+        res.status(200).send(searchResult);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to fetch queries." });
       }
     });
 
@@ -191,7 +213,9 @@ async function run() {
     app.get("/Indivucomments/:query_id", async (req, res) => {
       const { query_id } = req.params;
       try {
-        const comments = await commentsCollection.find({ query_id: new ObjectId(query_id) }).toArray();
+        const comments = await commentsCollection
+          .find({ query_id: new ObjectId(query_id) })
+          .toArray();
         res.status(200).send(comments);
       } catch (error) {
         res.status(500).send({ error: "Failed to fetch comments." });
@@ -214,7 +238,9 @@ async function run() {
     app.delete("/comments/:id", async (req, res) => {
       const { id } = req.params;
       try {
-        const comment = await commentsCollection.findOne({ _id: new ObjectId(id) });
+        const comment = await commentsCollection.findOne({
+          _id: new ObjectId(id),
+        });
         if (!comment) {
           return res.status(404).send({ error: "Comment not found." });
         }
@@ -245,4 +271,3 @@ run().catch(console.dir);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
