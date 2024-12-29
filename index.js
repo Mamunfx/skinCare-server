@@ -102,6 +102,56 @@ async function run() {
       }
     });
 
+    // Update a query by ID 
+    app.put("/queries/:id", async (req, res) => {
+      const { id } = req.params;
+      const {
+        productName,
+        productBrand,
+        productImageUrl,
+        queryTitle,
+        boycottingReasonDetails,
+      } = req.body;
+      try {
+        const result = await queriesCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              productName,
+              productBrand,
+              productImageUrl,
+              queryTitle,
+              boycottingReasonDetails,
+            },
+          }
+        );
+        if (result.modifiedCount === 0) {
+          return res
+            .status(404)
+            .send({ error: "Query not found or no changes made." });
+        }
+        res.status(200).send({ message: "Query updated successfully." });
+      } catch (error) {
+        res.status(500).send({ error: "Failed to update query." });
+      }
+    });
+
+    // Delete a query by ID and handle recommendation count update
+    app.delete("/queries/:id", async (req, res) => {
+      const { id } = req.params;
+      try {
+        const query = await queriesCollection.findOne({ _id: new ObjectId(id) });
+        if (!query) {
+          return res.status(404).send({ error: "Query not found." });
+        }
+        await queriesCollection.deleteOne({ _id: new ObjectId(id) });
+        await commentsCollection.deleteMany({ query_id: new ObjectId(id) });
+        res.status(200).send({ message: "Query and related recommendations deleted successfully." });
+      } catch (error) {
+        res.status(500).send({ error: "Failed to delete query." });
+      }
+    });
+
     // Add a new comment to a query
     app.post("/comments", async (req, res) => {
       const {
@@ -114,7 +164,6 @@ async function run() {
         recommenderEmail,
         recommenderName,
       } = req.body;
-
       const newComment = {
         query_id: new ObjectId(query_id),
         recommendationTitle,
@@ -126,17 +175,13 @@ async function run() {
         recommenderName,
         created_at: new Date(),
       };
-
       try {
         const result = await commentsCollection.insertOne(newComment);
-
-        // Increment the recommendation count in the query
         await queriesCollection.updateOne(
           { _id: new ObjectId(query_id) },
           { $inc: { recommendationCount: 1 } }
         );
-
-        res.status(201).send(result.ops[0]);
+        res.send(result);
       } catch (error) {
         res.status(500).send({ error: "Failed to add comment." });
       }
@@ -168,14 +213,11 @@ async function run() {
     // Delete a comment and update recommendation count
     app.delete("/comments/:id", async (req, res) => {
       const { id } = req.params;
-
       try {
         const comment = await commentsCollection.findOne({ _id: new ObjectId(id) });
-
         if (!comment) {
           return res.status(404).send({ error: "Comment not found." });
         }
-
         await commentsCollection.deleteOne({ _id: new ObjectId(id) });
 
         // Decrement recommendation count in the query
