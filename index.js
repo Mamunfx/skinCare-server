@@ -10,7 +10,11 @@ const port = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5175'],
+  origin: ['http://localhost:5175',
+    'https://assignment11-f5403.web.app',
+    'https://assignment11-f5403.firebaseapp.com'
+
+  ],
   credentials: true
 }));
 app.use(express.json());
@@ -62,13 +66,14 @@ const verifyToken = (req, res, next) => {
         const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: "4h",
         });
-        res.cookie("token", token, { httpOnly: true, secure: false }).send({ success: true });
+        res.cookie("token", token, { httpOnly: true,  secure: process.env.NODE_ENV === "production",sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", }).send({ success: true });
       });
 
       app.post('/logout', (req, res) => {
         res.clearCookie('token', {
           httpOnly: true,
-          secure: false
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         }).send({ success: true });
       });
 
