@@ -23,13 +23,13 @@ app.use(cookieParser());
 // JWT token verification middleware 
 const verifyToken = (req, res, next) => {
   const token = req.cookies?.token;
-  console.log("Token:", token); // Log the token
+  //console.log("Token:", token); // Log the token
   if (!token) {
     return res.status(401).send({ message: "Unauthorized access: No token provided" });
   }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.log("JWT Error:", err); // Log the error
+      //console.log("JWT Error:", err); // Log the error
       return res.status(401).send({ message: "Unauthorized access: Invalid token" });
     }
     req.user = decoded;
@@ -213,7 +213,7 @@ const verifyToken = (req, res, next) => {
         const { productName } = req.query;
         try {
           const searchResult = await queriesCollection.find({ productName }).toArray();
-          console.log(searchResult);
+          //console.log(searchResult);
 
           res.status(200).send(searchResult);
         } catch (error) {
@@ -316,5 +316,5 @@ const verifyToken = (req, res, next) => {
   run().catch(console.dir);
 
   app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    //console.log(`Server is running on port ${port}`);
   });
