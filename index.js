@@ -13,7 +13,6 @@ app.use(cors({
   origin: ['http://localhost:5175',
     'https://assignment11-f5403.web.app',
     'https://assignment11-f5403.firebaseapp.com'
-
   ],
   credentials: true
 }));
@@ -125,7 +124,6 @@ const verifyToken = (req, res, next) => {
       // Get a single query by ID
       app.get("/queries/:id", async (req, res) => {
         const { id } = req.params;
-
         try {
           const query = await queriesCollection.findOne({
             _id: new ObjectId(id),
