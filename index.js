@@ -10,9 +10,13 @@ const port = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5175',
+  origin: ['http://localhost:5173',
+    'http://localhost:5171',
+    'http://localhost:5175',
+    'http://localhost:5174',
     'https://assignment11-f5403.web.app',
-    'https://assignment11-f5403.firebaseapp.com'
+    'https://assignment11-f5403.firebaseapp.com',
+    'https://skin-care299.netlify.app'
   ],
   credentials: true
 }));
