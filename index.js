@@ -10,10 +10,7 @@ const port = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173',
-    'http://localhost:5171',
-    'http://localhost:5175',
-    'http://localhost:5174',
+  origin: [
     'https://skincare-299.netlify.app',
   ],
   credentials: true
