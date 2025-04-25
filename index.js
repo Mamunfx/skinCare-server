@@ -14,9 +14,7 @@ app.use(cors({
     'http://localhost:5171',
     'http://localhost:5175',
     'http://localhost:5174',
-    'https://assignment11-f5403.web.app',
-    'https://assignment11-f5403.firebaseapp.com',
-    'https://skin-care299.netlify.app'
+    'https://skincare-299.netlify.app',
   ],
   credentials: true
 }));
